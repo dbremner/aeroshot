@@ -122,7 +122,7 @@ namespace AeroShot {
         [DllImport("dwmapi.dll", ExactSpelling = true)]
         internal static extern int DwmIsCompositionEnabled(ref bool pfEnabled);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         internal static extern IntPtr FindWindow(string lpClassName,
                                                  string lpWindowName);
 
@@ -158,7 +158,7 @@ namespace AeroShot {
         [DllImport("user32.dll")]
         internal static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         internal static extern int GetWindowText(IntPtr hWnd,
                                                  StringBuilder lpString,
                                                  int nMaxCount);
@@ -195,7 +195,7 @@ namespace AeroShot {
                                            IntPtr hdcSource, int xSrc, int ySrc,
                                            CopyPixelOperation rop);
 
-        [DllImport("gdi32.dll")]
+        [DllImport("gdi32.dll", CharSet = CharSet.Unicode)]
         internal static extern IntPtr CreateDC(string lpszDriver,
                                                string lpszDevice,
                                                string lpszOutput, int lpInitData);
