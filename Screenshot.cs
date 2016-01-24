@@ -66,26 +66,26 @@ namespace AeroShot {
         private const uint SWP_SHOWWINDOW = 0x0040;
 
         internal static void CaptureWindow(ref ScreenshotTask data) {
-            IntPtr start = WindowsApi.FindWindow("Button", "Start");
-            IntPtr taskbar = WindowsApi.FindWindow("Shell_TrayWnd", null);
+            IntPtr start = NativeMethods.FindWindow("Button", "Start");
+            IntPtr taskbar = NativeMethods.FindWindow("Shell_TrayWnd", null);
             if (data.ClipboardNotDisk ||
                 Directory.Exists(data.DiskSaveDirectory)) {
                 try {
                     // Hide the taskbar, just incase it gets in the way
                     if (data.WindowHandle != start &&
                         data.WindowHandle != taskbar) {
-                        WindowsApi.ShowWindow(start, 0);
-                        WindowsApi.ShowWindow(taskbar, 0);
+                        NativeMethods.ShowWindow(start, 0);
+                        NativeMethods.ShowWindow(taskbar, 0);
                         Application.DoEvents();
                     }
-                    if (WindowsApi.IsIconic(data.WindowHandle)) {
-                        WindowsApi.ShowWindow(data.WindowHandle, 1);
+                    if (NativeMethods.IsIconic(data.WindowHandle)) {
+                        NativeMethods.ShowWindow(data.WindowHandle, 1);
                         Thread.Sleep(300); // Wait for window to be restored
                     } else {
-                        WindowsApi.ShowWindow(data.WindowHandle, 5);
+                        NativeMethods.ShowWindow(data.WindowHandle, 5);
                         Thread.Sleep(100);
                     }
-                    WindowsApi.SetForegroundWindow(data.WindowHandle);
+                    NativeMethods.SetForegroundWindow(data.WindowHandle);
 
                     var r = new WindowsRect(0);
                     if (data.DoResize) {
@@ -94,9 +94,9 @@ namespace AeroShot {
                     }
 
                     int length =
-                        WindowsApi.GetWindowTextLength(data.WindowHandle);
+                        NativeMethods.GetWindowTextLength(data.WindowHandle);
                     var sb = new StringBuilder(length + 1);
-                    WindowsApi.GetWindowText(data.WindowHandle, sb, sb.Capacity);
+                    NativeMethods.GetWindowText(data.WindowHandle, sb, sb.Capacity);
 
                     string name = sb.ToString();
 
@@ -108,8 +108,8 @@ namespace AeroShot {
                     // Show the taskbar again
                     if (data.WindowHandle != start &&
                         data.WindowHandle != taskbar) {
-                        WindowsApi.ShowWindow(start, 1);
-                        WindowsApi.ShowWindow(taskbar, 1);
+                        NativeMethods.ShowWindow(start, 1);
+                        NativeMethods.ShowWindow(taskbar, 1);
                     }
 
                     if (s == null) {
@@ -166,10 +166,10 @@ namespace AeroShot {
 
                     if (data.DoResize) {
                         if (
-                            (WindowsApi.GetWindowLong(data.WindowHandle,
+                            (NativeMethods.GetWindowLong(data.WindowHandle,
                                                       GWL_STYLE) & WS_SIZEBOX) ==
                             WS_SIZEBOX) {
-                            WindowsApi.SetWindowPos(data.WindowHandle,
+                            NativeMethods.SetWindowPos(data.WindowHandle,
                                                     (IntPtr) 0, r.Left, r.Top,
                                                     r.Right - r.Left,
                                                     r.Bottom - r.Top,
@@ -179,8 +179,8 @@ namespace AeroShot {
                 } catch (Exception) {
                     if (data.WindowHandle != start &&
                         data.WindowHandle != taskbar) {
-                        WindowsApi.ShowWindow(start, 1);
-                        WindowsApi.ShowWindow(taskbar, 1);
+                        NativeMethods.ShowWindow(start, 1);
+                        NativeMethods.ShowWindow(taskbar, 1);
                     }
                     MessageBox.Show(
                         "An error occurred while trying to take a screenshot.\r\n\r\nPlease make sure you have selected a valid window.",
@@ -195,17 +195,17 @@ namespace AeroShot {
         private static void SmartResizeWindow(ref ScreenshotTask data,
                                               out WindowsRect oldWindowSize) {
             oldWindowSize = new WindowsRect(0);
-            if ((WindowsApi.GetWindowLong(data.WindowHandle, GWL_STYLE) &
+            if ((NativeMethods.GetWindowLong(data.WindowHandle, GWL_STYLE) &
                  WS_SIZEBOX) != WS_SIZEBOX)
                 return;
 
             var r = new WindowsRect();
-            WindowsApi.GetWindowRect(data.WindowHandle, ref r);
+            NativeMethods.GetWindowRect(data.WindowHandle, ref r);
             oldWindowSize = r;
 
             Bitmap f = CaptureCompositeScreenshot(ref data);
             if (f != null) {
-                WindowsApi.SetWindowPos(data.WindowHandle, (IntPtr) 0, r.Left,
+                NativeMethods.SetWindowPos(data.WindowHandle, (IntPtr) 0, r.Left,
                                         r.Top,
                                         data.ResizeX -
                                         (f.Width - (r.Right - r.Left)),
@@ -214,7 +214,7 @@ namespace AeroShot {
                                         SWP_SHOWWINDOW);
                 f.Dispose();
             } else {
-                WindowsApi.SetWindowPos(data.WindowHandle, (IntPtr) 0, r.Left,
+                NativeMethods.SetWindowPos(data.WindowHandle, (IntPtr) 0, r.Left,
                                         r.Top, data.ResizeX, data.ResizeY,
                                         SWP_SHOWWINDOW);
             }
@@ -241,13 +241,13 @@ namespace AeroShot {
             var rct = new WindowsRect();
 
             if (
-                WindowsApi.DwmGetWindowAttribute(data.WindowHandle,
+                NativeMethods.DwmGetWindowAttribute(data.WindowHandle,
                                                  DwmWindowAttribute
                                                      .ExtendedFrameBounds,
                                                  ref rct, sizeof (WindowsRect)) !=
                 0)
                 // DwmGetWindowAttribute() failed, usually means Aero is disabled so we fall back to GetWindowRect()
-                WindowsApi.GetWindowRect(data.WindowHandle, ref rct);
+                NativeMethods.GetWindowRect(data.WindowHandle, ref rct);
             else {
                 // DwmGetWindowAttribute() succeeded
                 // Add a 100px margin for window shadows. Excess transparency is trimmed out later
@@ -267,8 +267,8 @@ namespace AeroShot {
             if (rct.Bottom > totalSize.Bottom)
                 rct.Bottom = totalSize.Bottom;
 
-            WindowsApi.ShowWindow(backdrop.Handle, 4);
-            WindowsApi.SetWindowPos(backdrop.Handle, data.WindowHandle, rct.Left,
+            NativeMethods.ShowWindow(backdrop.Handle, 4);
+            NativeMethods.SetWindowPos(backdrop.Handle, data.WindowHandle, rct.Left,
                                     rct.Top, rct.Right - rct.Left,
                                     rct.Bottom - rct.Top, SWP_NOACTIVATE);
             backdrop.Opacity = 1;
@@ -331,11 +331,11 @@ namespace AeroShot {
                                                Point offsetLocation) {
             var ci = new CursorInfoStruct();
             ci.cbSize = Marshal.SizeOf(ci);
-            if (WindowsApi.GetCursorInfo(out ci)) {
+            if (NativeMethods.GetCursorInfo(out ci)) {
                 if (ci.flags == 1) {
-                    IntPtr hicon = WindowsApi.CopyIcon(ci.hCursor);
+                    IntPtr hicon = NativeMethods.CopyIcon(ci.hCursor);
                     IconInfoStruct icInfo;
-                    if (WindowsApi.GetIconInfo(hicon, out icInfo)) {
+                    if (NativeMethods.GetIconInfo(hicon, out icInfo)) {
                         var loc =
                             new Point(
                                 ci.ptScreenPos.X - offsetLocation.X -
@@ -348,7 +348,7 @@ namespace AeroShot {
                         Graphics g = Graphics.FromImage(windowImage);
                         g.DrawImage(bmp, new Rectangle(loc, bmp.Size));
                         g.Dispose();
-                        WindowsApi.DestroyIcon(hicon);
+                        NativeMethods.DestroyIcon(hicon);
                         bmp.Dispose();
                     }
                 }
@@ -361,23 +361,23 @@ namespace AeroShot {
             foreach (Screen s in Screen.AllScreens)
                 totalSize = Rectangle.Union(totalSize, s.Bounds);
 
-            IntPtr hSrc = WindowsApi.CreateDC("DISPLAY", null, null, 0);
-            IntPtr hDest = WindowsApi.CreateCompatibleDC(hSrc);
-            IntPtr hBmp = WindowsApi.CreateCompatibleBitmap(hSrc,
+            IntPtr hSrc = NativeMethods.CreateDC("DISPLAY", null, null, IntPtr.Zero);
+            IntPtr hDest = NativeMethods.CreateCompatibleDC(hSrc);
+            IntPtr hBmp = NativeMethods.CreateCompatibleBitmap(hSrc,
                                                             crop.Right -
                                                             crop.Left,
                                                             crop.Bottom -
                                                             crop.Top);
-            IntPtr hOldBmp = WindowsApi.SelectObject(hDest, hBmp);
-            WindowsApi.BitBlt(hDest, 0, 0, crop.Right - crop.Left,
+            IntPtr hOldBmp = NativeMethods.SelectObject(hDest, hBmp);
+            NativeMethods.BitBlt(hDest, 0, 0, crop.Right - crop.Left,
                               crop.Bottom - crop.Top, hSrc, crop.Left, crop.Top,
                               CopyPixelOperation.SourceCopy |
                               CopyPixelOperation.CaptureBlt);
             Bitmap bmp = Image.FromHbitmap(hBmp);
-            WindowsApi.SelectObject(hDest, hOldBmp);
-            WindowsApi.DeleteObject(hBmp);
-            WindowsApi.DeleteDC(hDest);
-            WindowsApi.DeleteDC(hSrc);
+            NativeMethods.SelectObject(hDest, hOldBmp);
+            NativeMethods.DeleteObject(hBmp);
+            NativeMethods.DeleteDC(hDest);
+            NativeMethods.DeleteDC(hSrc);
 
             return bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height),
                              PixelFormat.Format24bppRgb);

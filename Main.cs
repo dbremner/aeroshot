@@ -47,16 +47,16 @@ namespace AeroShot {
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             InitializeComponent();
 
-            if (WindowsApi.DwmIsCompositionEnabled(ref _dwmComposited) == 0) {
+            if (NativeMethods.DwmIsCompositionEnabled(ref _dwmComposited) == 0) {
                 if (_dwmComposited) {
                     ssButton.Location = new Point(ssButton.Location.X, 310);
                     var margin = new WindowsMargins(0, 0, 0, 35);
-                    WindowsApi.DwmExtendFrameIntoClientArea(Handle, ref margin);
+                    NativeMethods.DwmExtendFrameIntoClientArea(Handle, ref margin);
                 }
             }
 
             _windowId = GetHashCode();
-            WindowsApi.RegisterHotKey(Handle, _windowId, MOD_ALT,
+            NativeMethods.RegisterHotKey(Handle, _windowId, MOD_ALT,
                                       (int) Keys.PrintScreen);
 
             object value;
@@ -185,7 +185,7 @@ namespace AeroShot {
             windowList.Items.Clear();
 
             _callBackPtr = ListWindows;
-            WindowsApi.EnumWindows(_callBackPtr, (IntPtr) 0);
+            NativeMethods.EnumWindows(_callBackPtr, (IntPtr) 0);
             windowList.SelectedIndex = 0;
         }
 
@@ -293,7 +293,7 @@ namespace AeroShot {
         }
 
         private void FormClose(object sender, FormClosingEventArgs e) {
-            WindowsApi.UnregisterHotKey(Handle, _windowId);
+            NativeMethods.UnregisterHotKey(Handle, _windowId);
             if (clipboardButton.Checked)
                 _registryKey.SetValue("LastPath", "*" + folderTextBox.Text);
             else
@@ -345,7 +345,7 @@ namespace AeroShot {
                 var rc = new Rectangle(0, ClientSize.Height - 35,
                                        ClientSize.Width, 35);
                 IntPtr destdc = e.Graphics.GetHdc();
-                IntPtr memdc = WindowsApi.CreateCompatibleDC(destdc);
+                IntPtr memdc = NativeMethods.CreateCompatibleDC(destdc);
                 IntPtr bitmapOld = IntPtr.Zero;
                 var dib = new BitmapInfo {
                     biHeight = -(rc.Bottom - rc.Top),
@@ -355,21 +355,21 @@ namespace AeroShot {
                     biBitCount = 32,
                     biCompression = 0
                 };
-                if (WindowsApi.SaveDC(memdc) != 0) {
+                if (NativeMethods.SaveDC(memdc) != 0) {
                     IntPtr tmp;
-                    IntPtr bitmap = WindowsApi.CreateDIBSection(memdc, ref dib,
+                    IntPtr bitmap = NativeMethods.CreateDIBSection(memdc, ref dib,
                                                                 0, out tmp,
                                                                 IntPtr.Zero, 0);
                     if (!(bitmap == IntPtr.Zero)) {
-                        bitmapOld = WindowsApi.SelectObject(memdc, bitmap);
-                        WindowsApi.BitBlt(destdc, rc.Left, rc.Top,
+                        bitmapOld = NativeMethods.SelectObject(memdc, bitmap);
+                        NativeMethods.BitBlt(destdc, rc.Left, rc.Top,
                                           rc.Right - rc.Left, rc.Bottom - rc.Top,
                                           memdc, 0, 0,
                                           CopyPixelOperation.SourceCopy);
                     }
-                    WindowsApi.SelectObject(memdc, bitmapOld);
-                    WindowsApi.DeleteObject(bitmap);
-                    WindowsApi.DeleteDC(memdc);
+                    NativeMethods.SelectObject(memdc, bitmapOld);
+                    NativeMethods.DeleteObject(bitmap);
+                    NativeMethods.DeleteDC(memdc);
                 }
                 e.Graphics.ReleaseHdc(destdc);
             }
@@ -389,12 +389,12 @@ namespace AeroShot {
                 _worker.Start();
             }
             if (m.Msg == WM_DWMCOMPOSITIONCHANGED) {
-                WindowsApi.DwmIsCompositionEnabled(ref _dwmComposited);
+                NativeMethods.DwmIsCompositionEnabled(ref _dwmComposited);
 
                 if (_dwmComposited) {
                     ssButton.Location = new Point(ssButton.Location.X, 310);
                     var margin = new WindowsMargins(0, 0, 0, 35);
-                    WindowsApi.DwmExtendFrameIntoClientArea(Handle, ref margin);
+                    NativeMethods.DwmExtendFrameIntoClientArea(Handle, ref margin);
                 } else
                     ssButton.Location = new Point(ssButton.Location.X, 305);
             }
@@ -410,7 +410,7 @@ namespace AeroShot {
             return
                 new ScreenshotTask(
                     useForegroundWindow
-                        ? WindowsApi.GetForegroundWindow()
+                        ? NativeMethods.GetForegroundWindow()
                         : _handleList[windowList.SelectedIndex],
                     clipboardButton.Checked, folderTextBox.Text,
                     resizeCheckbox.Checked, (int) windowWidth.Value,
@@ -420,23 +420,23 @@ namespace AeroShot {
         }
 
         private bool ListWindows(IntPtr hWnd, int lParam) {
-            if (!WindowsApi.IsWindowVisible(hWnd))
+            if (!NativeMethods.IsWindowVisible(hWnd))
                 return true;
-            if ((WindowsApi.GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_APPWINDOW) !=
+            if ((NativeMethods.GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_APPWINDOW) !=
                 WS_EX_APPWINDOW) {
-                if (WindowsApi.GetWindow(hWnd, GW_OWNER) != IntPtr.Zero)
+                if (NativeMethods.GetWindow(hWnd, GW_OWNER) != IntPtr.Zero)
                     return true;
-                if ((WindowsApi.GetWindowLong(hWnd, GWL_EXSTYLE) &
+                if ((NativeMethods.GetWindowLong(hWnd, GWL_EXSTYLE) &
                      WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW)
                     return true;
-                if ((WindowsApi.GetWindowLong(hWnd, GWL_STYLE) & WS_CHILD) ==
+                if ((NativeMethods.GetWindowLong(hWnd, GWL_STYLE) & WS_CHILD) ==
                     WS_CHILD)
                     return true;
             }
 
-            int length = WindowsApi.GetWindowTextLength(hWnd);
+            int length = NativeMethods.GetWindowTextLength(hWnd);
             var sb = new StringBuilder(length + 1);
-            WindowsApi.GetWindowText(hWnd, sb, sb.Capacity);
+            NativeMethods.GetWindowText(hWnd, sb, sb.Capacity);
 
             _handleList.Add(hWnd);
             windowList.Items.Add(sb.ToString());
