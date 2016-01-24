@@ -45,12 +45,11 @@ namespace AeroShot {
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             InitializeComponent();
 
-            if (NativeMethods.DwmIsCompositionEnabled(ref _dwmComposited) == 0) {
-                if (_dwmComposited) {
-                    ssButton.Location = new Point(ssButton.Location.X, 310);
-                    var margin = new WindowsMargins(0, 0, 0, 35);
-                    NativeMethods.DwmExtendFrameIntoClientArea(Handle, ref margin);
-                }
+            _dwmComposited = Dwm.IsCompositionEnabled();
+            if (_dwmComposited) {
+                ssButton.Location = new Point(ssButton.Location.X, 310);
+                var margin = new WindowsMargins(0, 0, 0, 35);
+                NativeMethods.DwmExtendFrameIntoClientArea(Handle, ref margin);
             }
 
             _windowId = GetHashCode();
@@ -387,7 +386,7 @@ namespace AeroShot {
                 _worker.Start();
             }
             if (m.Msg == WM_DWMCOMPOSITIONCHANGED) {
-                NativeMethods.DwmIsCompositionEnabled(ref _dwmComposited);
+                _dwmComposited = Dwm.IsCompositionEnabled();
 
                 if (_dwmComposited) {
                     ssButton.Location = new Point(ssButton.Location.X, 310);

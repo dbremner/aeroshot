@@ -55,11 +55,19 @@ namespace AeroShot
 
     internal static class Dwm
     {
+        private static readonly bool _isCompositionEnabled;
+
+        static Dwm()
+        {
+            // TODO check HRESULT properly
+            bool succeeded = NativeMethods.DwmIsCompositionEnabled(ref _isCompositionEnabled) == 0;
+            if (!succeeded)
+                _isCompositionEnabled = false;
+        }
+
         public static bool IsCompositionEnabled()
         {
-            bool isCompositionEnabled = false;
-            NativeMethods.DwmIsCompositionEnabled(ref isCompositionEnabled);
-            return isCompositionEnabled;
+            return _isCompositionEnabled;
         }
 
         private static class NativeMethods
