@@ -65,9 +65,9 @@ namespace AeroShot
                 _isCompositionEnabled = false;
         }
 
-        public static bool IsCompositionEnabled()
+        public static bool IsCompositionEnabled
         {
-            return _isCompositionEnabled;
+            get { return _isCompositionEnabled; }
         }
 
         private static class NativeMethods
