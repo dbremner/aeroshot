@@ -25,8 +25,6 @@ using Microsoft.Win32;
 
 namespace AeroShot {
     public sealed partial class MainForm : Form {
-        private const int GWL_STYLE = -16;
-        private const int GWL_EXSTYLE = -20;
         private const int WM_DWMCOMPOSITIONCHANGED = 0x031E;
         private const long WS_CHILD = 0x40000000L;
         private const long WS_EX_APPWINDOW = 0x00040000L;
@@ -37,7 +35,7 @@ namespace AeroShot {
         private readonly List<IntPtr> _handleList = new List<IntPtr>();
         private readonly RegistryKey _registryKey;
         private readonly int _windowId;
-        private CallBackPtr _callBackPtr;
+        private NativeMethods.CallBackPtr _callBackPtr;
         private bool _dwmComposited;
         private Image _ssButtonImage;
         private Thread _worker;
@@ -422,14 +420,14 @@ namespace AeroShot {
         private bool ListWindows(IntPtr hWnd, int lParam) {
             if (!NativeMethods.IsWindowVisible(hWnd))
                 return true;
-            if ((NativeMethods.GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_APPWINDOW) !=
+            if ((User32.GetWindowStyle(hWnd) & WS_EX_APPWINDOW) !=
                 WS_EX_APPWINDOW) {
                 if (NativeMethods.GetWindow(hWnd, GW_OWNER) != IntPtr.Zero)
                     return true;
-                if ((NativeMethods.GetWindowLong(hWnd, GWL_EXSTYLE) &
+                if ((User32.GetWindowExStyle(hWnd) &
                      WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW)
                     return true;
-                if ((NativeMethods.GetWindowLong(hWnd, GWL_STYLE) & WS_CHILD) ==
+                if ((User32.GetWindowStyle(hWnd) & WS_CHILD) ==
                     WS_CHILD)
                     return true;
             }

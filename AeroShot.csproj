@@ -56,6 +56,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Gdi32.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -63,9 +64,10 @@
       <DependentUpon>Main.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
+    <Compile Include="Dwmapi.cs" />
     <Compile Include="Screenshot.cs" />
     <Compile Include="UnsafeBitmap.cs" />
-    <Compile Include="NativeMethods.cs" />
+    <Compile Include="User32.cs" />
     <Content Include="icon.ico" />
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
