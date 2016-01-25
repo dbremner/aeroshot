@@ -65,6 +65,40 @@ namespace AeroShot
     }
 
 
+    internal static class Gdi
+    {
+        public static IntPtr CreateDisplayDC()
+        {
+            return NativeMethods.CreateDC("DISPLAY", null, null, IntPtr.Zero);
+        }
+
+        public static IntPtr SelectBitmap(IntPtr hdc, IntPtr hbmp)
+        {
+            return NativeMethods.SelectObject(hdc, hbmp);
+        }
+
+        public static void DeleteBitmap(IntPtr hBitmap)
+        {
+            // TODO check return value
+            NativeMethods.DeleteObject(hBitmap);
+        }
+
+        private static class NativeMethods
+        {
+            [DllImport("gdi32.dll")]
+            internal static extern IntPtr SelectObject(IntPtr hdc, IntPtr bmp);
+
+            [DllImport("gdi32.dll")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            internal static extern int DeleteObject(IntPtr hDc);
+
+            [DllImport("gdi32.dll", CharSet = CharSet.Unicode)]
+            internal static extern IntPtr CreateDC(string lpszDriver,
+                                       string lpszDevice,
+                                       string lpszOutput, IntPtr lpInitData);
+        }
+    }
+
     internal static partial class NativeMethods
     {
         [DllImport("gdi32.dll")]
@@ -72,11 +106,6 @@ namespace AeroShot
                                            int wDest, int hDest,
                                            IntPtr hdcSource, int xSrc, int ySrc,
                                            CopyPixelOperation rop);
-
-        [DllImport("gdi32.dll", CharSet = CharSet.Unicode)]
-        internal static extern IntPtr CreateDC(string lpszDriver,
-                                               string lpszDevice,
-                                               string lpszOutput, IntPtr lpInitData);
 
         [DllImport("gdi32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -94,19 +123,12 @@ namespace AeroShot
                                                        uint dwOffset);
 
         [DllImport("gdi32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern int DeleteObject(IntPtr hDc);
-
-        [DllImport("gdi32.dll")]
         internal static extern IntPtr CreateCompatibleBitmap(IntPtr hdc,
                                                              int nWidth,
                                                              int nHeight);
 
         [DllImport("gdi32.dll")]
         internal static extern IntPtr CreateCompatibleDC(IntPtr hdc);
-
-        [DllImport("gdi32.dll")]
-        internal static extern IntPtr SelectObject(IntPtr hdc, IntPtr bmp);
     }
 
 }

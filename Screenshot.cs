@@ -166,8 +166,7 @@ namespace AeroShot {
 
                     if (data.DoResize) {
                         if (
-                            (NativeMethods.GetWindowLong(data.WindowHandle,
-                                                      GWL_STYLE) & WS_SIZEBOX) ==
+                            (User32.GetWindowStyle(data.WindowHandle) & WS_SIZEBOX) ==
                             WS_SIZEBOX) {
                             NativeMethods.SetWindowPos(data.WindowHandle,
                                                     (IntPtr) 0, r.Left, r.Top,
@@ -195,7 +194,7 @@ namespace AeroShot {
         private static void SmartResizeWindow(ref ScreenshotTask data,
                                               out WindowsRect oldWindowSize) {
             oldWindowSize = new WindowsRect(0);
-            if ((NativeMethods.GetWindowLong(data.WindowHandle, GWL_STYLE) &
+            if ((User32.GetWindowStyle(data.WindowHandle) &
                  WS_SIZEBOX) != WS_SIZEBOX)
                 return;
 
@@ -361,21 +360,21 @@ namespace AeroShot {
             foreach (Screen s in Screen.AllScreens)
                 totalSize = Rectangle.Union(totalSize, s.Bounds);
 
-            IntPtr hSrc = NativeMethods.CreateDC("DISPLAY", null, null, IntPtr.Zero);
+            IntPtr hSrc = Gdi.CreateDisplayDC();
             IntPtr hDest = NativeMethods.CreateCompatibleDC(hSrc);
             IntPtr hBmp = NativeMethods.CreateCompatibleBitmap(hSrc,
                                                             crop.Right -
                                                             crop.Left,
                                                             crop.Bottom -
                                                             crop.Top);
-            IntPtr hOldBmp = NativeMethods.SelectObject(hDest, hBmp);
+            IntPtr hOldBmp = Gdi.SelectBitmap(hDest, hBmp);
             NativeMethods.BitBlt(hDest, 0, 0, crop.Right - crop.Left,
                               crop.Bottom - crop.Top, hSrc, crop.Left, crop.Top,
                               CopyPixelOperation.SourceCopy |
                               CopyPixelOperation.CaptureBlt);
             Bitmap bmp = Image.FromHbitmap(hBmp);
-            NativeMethods.SelectObject(hDest, hOldBmp);
-            NativeMethods.DeleteObject(hBmp);
+            Gdi.SelectBitmap(hDest, hOldBmp);
+            Gdi.DeleteBitmap(hBmp);
             NativeMethods.DeleteDC(hDest);
             NativeMethods.DeleteDC(hSrc);
 

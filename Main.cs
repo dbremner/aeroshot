@@ -358,14 +358,14 @@ namespace AeroShot {
                                                                 0, out tmp,
                                                                 IntPtr.Zero, 0);
                     if (!(bitmap == IntPtr.Zero)) {
-                        bitmapOld = NativeMethods.SelectObject(memdc, bitmap);
+                        bitmapOld = Gdi.SelectBitmap(memdc, bitmap);
                         NativeMethods.BitBlt(destdc, rc.Left, rc.Top,
                                           rc.Right - rc.Left, rc.Bottom - rc.Top,
                                           memdc, 0, 0,
                                           CopyPixelOperation.SourceCopy);
                     }
-                    NativeMethods.SelectObject(memdc, bitmapOld);
-                    NativeMethods.DeleteObject(bitmap);
+                    Gdi.SelectBitmap(memdc, bitmapOld);
+                    Gdi.DeleteBitmap(bitmap);
                     NativeMethods.DeleteDC(memdc);
                 }
                 e.Graphics.ReleaseHdc(destdc);
